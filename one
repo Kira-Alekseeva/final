@@ -1,0 +1,60 @@
+from flask import Flask, request, render_template_string
+import base64
+
+app = Flask(__name__)
+
+# Шаблон HTML для отображения формы
+HTML_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encrypt and Decrypt</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        textarea { width: 100%; height: 100px; margin-bottom: 20px; }
+        button { padding: 10px 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Encrypt and Decrypt</h1>
+    <form method="post">
+        <textarea name="text" placeholder="Enter text here...">{{ text }}</textarea>
+        <br>
+        <button type="submit" name="action" value="encrypt">Encrypt</button>
+        <button type="submit" name="action" value="decrypt">Decrypt</button>
+    </form>
+    
+    {% if output %}
+        <h2>Output:</h2>
+        <textarea readonly>{{ output }}</textarea>
+    {% endif %}
+</div>
+</body>
+</html>
+'''
+
+def encrypt_text(input_text):
+    return base64.b64encode(input_text.encode()).decode()
+
+def decrypt_text(input_text):
+    return base64.b64decode(input_text.encode()).decode()
+
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    text = request.form.get('text', '')
+    action = request.form.get('action', '')
+    output = ''
+    
+    if action == 'encrypt':
+        output = encrypt_text(text)
+    elif action == 'decrypt':
+        output = decrypt_text(text)
+
+    return render_template_string(HTML_TEMPLATE, text=text, output=output)
+
+if __name__ == '__main__':
+    app.run(debug=True)
